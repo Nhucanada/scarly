@@ -69,32 +69,36 @@ class ImageAnalysis:
         io.show()
     
     def fix(self):
-        """Fix the image by sampling colours from surrounding 4 pixels
-        >>> i = ImageAnalysis("mountain.png")
-        """
-        fixed = self.image.copy()
-        hide_shape = 131, 100, 3
-    
-        for row in range(0, hide_shape[0], 11):
-            for col in range(0, hide_shape[1], 11):
-                nearby = []
-                
-                if row > 0: # Pixel Above
-                    nearby.append(fixed[row - 1, col])
-                if row: # Pixel Below
-                    nearby.append(fixed[row + 1, col])
-                if col > 0: # Pixel to Left
-                    nearby.append(fixed[row, col - 1])
-                if col: # Pixel to Right
-                    nearby.append(fixed[row, col + 1])
-                
-                if nearby:
-                    patch = np.mean(nearby, axis=0, dtype=np.uint8)
-                    fixed[row, col] = patch
-                    
-        self.fixed = fixed
-        io.imsave("mountain_fixed.jpg", self.fixed)
-        return self.find_hash(self.fixed)
+    """Fix the image by sampling colours from surrounding 4 pixels
+    >>> i = ImageAnalysis("mountain.png")
+    """
+    fixed = self.image.copy()
+    hide_shape = 131, 100, 3
+
+    for i in range(hide_shape[0]):
+        for j in range(hide_shape[1]):
+            row, col = i * 11, j * 11
+            nearby = []
+
+            if row > 0:  # Pixel Above
+                nearby.append(fixed[row - 1, col])
+            if row < fixed.shape[0] - 1:  # Pixel Below
+                nearby.append(fixed[row + 1, col])
+            if col > 0:  # Pixel to Left
+                nearby.append(fixed[row, col - 1])
+            if col < fixed.shape[1] - 1:  # Pixel to Right
+                nearby.append(fixed[row, col + 1])
+
+            if nearby:
+                patch = np.mean(nearby, axis=0).astype(np.uint8)
+                fixed[row, col] = patch
+
+    self.fixed = fixed
+    io.imsave("mountain_fixed.jpg", self.fixed)
+
+    # Return hash of the fixed image
+    self.hash = self.find_hash(self.fixed)
+    return self.hash
     
     def __eq__(self,other):
         """compares two image obj based on hash value
